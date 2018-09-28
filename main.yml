@@ -1,0 +1,41 @@
+- hosts: 127.0.0.1
+  connection: local
+
+  tasks:
+  - name: Update OS
+    become: yes
+    pacman: update_cache=yes upgrade=yes
+
+  - name: Install common applications
+    become: yes
+    pacman: name={{ item }} state=present
+    loop:
+    - git
+    - curl
+    - go
+    - nodejs
+    - npm
+    - neovim
+    - python-pip
+    - docker
+    - docker-compose
+
+  - name: Create required directories
+    file: path={{ item }} state=directory
+    loop:
+    - "{{ ansible_user_dir }}/.local/share/nvim/site/autoload"
+    - "{{ ansible_user_dir }}/.config/nvim"
+    - "{{ ansible_user_dir }}/Workspaces/go/src"
+    - "{{ ansible_user_dir }}/Workspaces/go/bin"
+    - "{{ ansible_user_dir }}/Workspaces/go/pkg"
+
+  - name: Download Vim-plug
+    become: yes
+    get_url:
+      url: "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+      dest: "{{ ansible_user_dir }}/.local/share/nvim/site/autoload/plug.vim"
+
+  - name: Create symlinks between configs
+    file: src={{ item.src }} dest={{ item.dest }} state=link
+    loop:
+    - { src: "{{ ansible_env.PWD }}/config/nvim/init.vim", dest: "{{ ansible_user_dir }}/.config/nvim/init.vim" }
