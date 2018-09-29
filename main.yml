@@ -29,6 +29,14 @@
     - "{{ ansible_user_dir }}/Workspaces/go/bin"
     - "{{ ansible_user_dir }}/Workspaces/go/pkg"
 
+  - name: Append environment variable
+    blockinfile:
+      path: "{{ ansible_user_dir}}/.bashrc"
+      block: |
+        export GOPATH=$HOME/Workspaces/go
+        export GOBIN=$GOPATH/bin
+        export PATH=$GOPATH:$GOBIN:$PATH
+
   - name: Download Vim-plug
     become: yes
     get_url:
